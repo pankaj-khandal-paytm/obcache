@@ -24,12 +24,23 @@ var redisStore = {
       throw new Error('Specify an integer cacheid for persistence across reboots, not ' + options.id);
     }
 
+    // Build options object for createClient
+    ropts.port = port;
+    ropts.host = host;
+
     if (options.redis.twemproxy) {
       ropts.no_ready_check = true;
       debug('twemproxy compat mode. stats on keys will not be available.');
 
     }
-    client = redis.createClient(port, host, ropts);
+
+    if (options.redis.tls) {
+      ropts.tls = options.redis.tls;
+      debug('TLS enabled for Redis connection');
+    }
+    
+    // Use object-based API for better TLS support
+    client = redis.createClient(ropts);
 
     client.on('error', function(err) {
       debug('redis error ' + err);
@@ -38,7 +49,7 @@ var redisStore = {
     if (!options.redis.twemproxy) {
       client.select(options.id);
       client.dbsize(setKeylen);
-    } 
+    }
 
     prefix = 'obc:' + options.id + ':' ;
 
