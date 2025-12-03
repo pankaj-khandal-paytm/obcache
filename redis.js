@@ -38,7 +38,12 @@ var redisStore = {
     if (!options.redis.twemproxy) {
       client.select(options.id);
       client.dbsize(setKeylen);
-    } 
+    }
+
+    if (options.redis.tls) {
+      ropts.tls = options.redis.tls;
+      debug('TLS enabled for Redis connection');
+    }
 
     prefix = 'obc:' + options.id + ':' ;
 
